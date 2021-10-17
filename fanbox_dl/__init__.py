@@ -1,10 +1,7 @@
-import json
-import os
 import sys
 from collections import Counter
-from pathlib import Path, PurePosixPath
-from typing import Any, Optional
-from urllib.parse import unquote, urlsplit
+from pathlib import Path
+from typing import Any
 
 import click
 import requests
