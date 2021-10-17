@@ -1,3 +1,5 @@
+import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -110,18 +112,20 @@ def main(
             print(f"Warning: Couldn't fetch post {post['id']}", file=sys.stderr)
             continue
 
-        # metadata_path = dest_dir / "metadata.json"
-        # if clobber or not metadata_path.exists():
-        #    with open(metadata_path, "w") as f:
-        #        json.dump(data, f)
+        metadata_path = f'{post["id"]}.json'
+        with open(metadata_path, "w") as f:
+            json.dump(data, f)
 
-        urls = (
-            [data["coverImageUrl"]]
-            + [x["originalUrl"] for x in data["body"].get("images", [])]
-            + [x["originalUrl"] for x in data["body"].get("imageMap", {}).values()]
-            + [x["url"] for x in data["body"].get("files", [])]
-            + [x["url"] for x in data["body"].get("fileMap", {}).values()]
+        urls = []
+        if data["coverImageUrl"]:
+            urls.append(data["coverImageUrl"])
+        urls.extend([x["originalUrl"] for x in data["body"].get("images", [])])
+        urls.extend(
+            [x["originalUrl"] for x in data["body"].get("imageMap", {}).values()]
         )
+        urls.extend([x["url"] for x in data["body"].get("files", [])])
+        urls.extend([x["url"] for x in data["body"].get("fileMap", {}).values()])
+
         images = []
         n_pad = len(str(len(urls)))
         for n, url in enumerate(urls):
@@ -130,3 +134,5 @@ def main(
 
         for image in images:
             download(image["url"], image["dest"], clobber, dry_run, session_id)
+
+        os.remove(metadata_path)
